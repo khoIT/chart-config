@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { 
   CheckCircle2, AlertTriangle, XCircle, ChevronRight, 
   Filter, Database, Table, GitBranch, Info, X, RefreshCw,
-  Plus, Trash2
+  Plus, Trash2, RotateCcw
 } from 'lucide-react';
 
 const AVAILABLE_FILTERS = [
@@ -124,7 +124,7 @@ const StepPanel = ({ steps, activeStep, onStepClick }) => {
   };
 
   return (
-    <div className="w-72 bg-white border-r border-slate-200 p-4 flex flex-col">
+    <div className="w-auto min-w-[18rem] max-w-[26rem] bg-white border-r border-slate-200 p-4 flex flex-col flex-shrink-0">
       <h2 className="text-lg font-semibold mb-4 text-slate-800">Configuration Steps</h2>
       <div className="space-y-2">
         {steps.map((step, idx) => {
@@ -137,24 +137,26 @@ const StepPanel = ({ steps, activeStep, onStepClick }) => {
               className={`step-panel-item ${isActive ? 'active' : ''}`}
               onClick={() => onStepClick(step.id)}
             >
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
                   isActive ? 'bg-blue-500 text-white' : 'bg-slate-100 text-slate-600'
                 }`}>
                   <Icon size={18} />
                 </div>
-                <div>
-                  <div className="font-medium text-slate-800">
+                <div className="min-w-0 flex-1">
+                  <div className="font-medium text-slate-800 truncate">
                     {idx + 1}. {step.name}
                   </div>
                   {step.invalidReason && (
-                    <div className="text-xs text-amber-600 mt-0.5">
+                    <div className="text-xs text-amber-600 mt-0.5 truncate" title={step.invalidReason}>
                       {step.invalidReason}
                     </div>
                   )}
                 </div>
               </div>
-              <StatusBadge status={step.status} />
+              <div className="flex-shrink-0 ml-2">
+                <StatusBadge status={step.status} />
+              </div>
             </div>
           );
         })}
@@ -162,7 +164,7 @@ const StepPanel = ({ steps, activeStep, onStepClick }) => {
       
       <div className="mt-auto pt-4 border-t border-slate-200">
         <div className="text-xs text-slate-500 mb-2">Dependency Flow</div>
-        <div className="flex items-center justify-center gap-1 text-slate-400 text-xs">
+        <div className="flex items-center justify-center gap-1 text-slate-400 text-xs flex-wrap">
           <span className="px-2 py-1 bg-slate-100 rounded">Filters</span>
           <ChevronRight size={14} />
           <span className="px-2 py-1 bg-slate-100 rounded">Query</span>
@@ -176,7 +178,22 @@ const StepPanel = ({ steps, activeStep, onStepClick }) => {
   );
 };
 
-const FiltersEditor = ({ state, onChange, invalidatedBy }) => {
+const ResetButton = ({ onReset, hasChanges }) => {
+  if (!hasChanges) return null;
+  
+  return (
+    <button
+      onClick={onReset}
+      className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors border border-slate-200"
+      title="Reset to state before editing"
+    >
+      <RotateCcw size={16} />
+      Reset Step
+    </button>
+  );
+};
+
+const FiltersEditor = ({ state, onChange, onReset, hasChanges }) => {
   const { selected, sampleValues } = state;
   
   const toggleFilter = (filterId) => {
@@ -214,8 +231,11 @@ const FiltersEditor = ({ state, onChange, invalidatedBy }) => {
 
   return (
     <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-medium text-slate-700">Available Filters</h3>
+        <ResetButton onReset={onReset} hasChanges={hasChanges} />
+      </div>
       <div>
-        <h3 className="text-sm font-medium text-slate-700 mb-3">Available Filters</h3>
         <div className="flex flex-wrap gap-2">
           {AVAILABLE_FILTERS.map(filter => {
             const isSelected = selected.includes(filter.id);
@@ -304,7 +324,7 @@ const FiltersEditor = ({ state, onChange, invalidatedBy }) => {
   );
 };
 
-const QueryEditor = ({ state, onChange, filtersState, issues, onAction }) => {
+const QueryEditor = ({ state, onChange, filtersState, issues, onAction, onReset, hasChanges }) => {
   const { statement, usedFilters } = state;
   
   const highlightQuery = (query) => {
@@ -344,6 +364,11 @@ const QueryEditor = ({ state, onChange, filtersState, issues, onAction }) => {
 
   return (
     <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <span></span>
+        <ResetButton onReset={onReset} hasChanges={hasChanges} />
+      </div>
+      
       <SmartAssistBanner issues={issues} onAction={onAction} />
       
       <div>
@@ -433,7 +458,7 @@ const QueryEditor = ({ state, onChange, filtersState, issues, onAction }) => {
   );
 };
 
-const PreviewEditor = ({ state, onChange, queryState, isOutdated, onRunQuery }) => {
+const PreviewEditor = ({ state, onChange, queryState, isOutdated, onRunQuery, onReset, hasChanges }) => {
   const { data, columns } = state;
   
   return (
@@ -451,9 +476,12 @@ const PreviewEditor = ({ state, onChange, queryState, isOutdated, onRunQuery }) 
       
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-medium text-slate-700">Data Table Preview</h3>
-        <button onClick={onRunQuery} className="btn-secondary text-sm">
-          Run Query
-        </button>
+        <div className="flex items-center gap-2">
+          <ResetButton onReset={onReset} hasChanges={hasChanges} />
+          <button onClick={onRunQuery} className="btn-secondary text-sm">
+            Run Query
+          </button>
+        </div>
       </div>
       
       <div className="border border-slate-200 rounded-lg overflow-hidden">
@@ -490,7 +518,7 @@ const PreviewEditor = ({ state, onChange, queryState, isOutdated, onRunQuery }) 
   );
 };
 
-const MappingEditor = ({ state, onChange, previewState, isOutdated }) => {
+const MappingEditor = ({ state, onChange, previewState, isOutdated, onReset, hasChanges }) => {
   const { valueMapping, previousValueField, compareValueField } = state;
   const availableColumns = previewState.columns;
   
@@ -508,6 +536,11 @@ const MappingEditor = ({ state, onChange, previewState, isOutdated }) => {
 
   return (
     <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <span></span>
+        <ResetButton onReset={onReset} hasChanges={hasChanges} />
+      </div>
+      
       {isOutdated && (
         <div className="warning-banner">
           <AlertTriangle size={16} />
@@ -583,6 +616,33 @@ export default function ChartConfigDemo() {
   const [configState, setConfigState] = useState(INITIAL_STATE);
   const [activeStep, setActiveStep] = useState('filters');
   const [changeHistory, setChangeHistory] = useState([]);
+  const [stepSnapshots, setStepSnapshots] = useState({
+    filters: JSON.parse(JSON.stringify(INITIAL_STATE.filters)),
+    query: JSON.parse(JSON.stringify(INITIAL_STATE.query)),
+    preview: JSON.parse(JSON.stringify(INITIAL_STATE.preview)),
+    mapping: JSON.parse(JSON.stringify(INITIAL_STATE.mapping)),
+  });
+
+  const hasStepChanges = useCallback((stepId) => {
+    const current = JSON.stringify(configState[stepId]);
+    const snapshot = JSON.stringify(stepSnapshots[stepId]);
+    return current !== snapshot;
+  }, [configState, stepSnapshots]);
+
+  const handleResetStep = useCallback((stepId) => {
+    const snapshotData = JSON.parse(JSON.stringify(stepSnapshots[stepId]));
+    setConfigState(prev => ({
+      ...prev,
+      [stepId]: snapshotData,
+    }));
+  }, [stepSnapshots]);
+
+  const confirmStepChanges = useCallback((stepId) => {
+    setStepSnapshots(prev => ({
+      ...prev,
+      [stepId]: JSON.parse(JSON.stringify(configState[stepId])),
+    }));
+  }, [configState]);
 
   const detectQueryIssues = useCallback(() => {
     const issues = [];
@@ -763,6 +823,8 @@ export default function ChartConfigDemo() {
           <FiltersEditor 
             state={configState.filters} 
             onChange={handleFilterChange}
+            onReset={() => handleResetStep('filters')}
+            hasChanges={hasStepChanges('filters')}
           />
         );
       case 'query':
@@ -773,6 +835,8 @@ export default function ChartConfigDemo() {
             filtersState={configState.filters}
             issues={queryIssues}
             onAction={handleSmartAction}
+            onReset={() => handleResetStep('query')}
+            hasChanges={hasStepChanges('query')}
           />
         );
       case 'preview':
@@ -783,6 +847,8 @@ export default function ChartConfigDemo() {
             queryState={configState.query}
             isOutdated={stepStatus.status !== STATUS.VALID}
             onRunQuery={handleRunQuery}
+            onReset={() => handleResetStep('preview')}
+            hasChanges={hasStepChanges('preview')}
           />
         );
       case 'mapping':
@@ -792,6 +858,8 @@ export default function ChartConfigDemo() {
             onChange={handleMappingChange}
             previewState={configState.preview}
             isOutdated={stepStatus.status !== STATUS.VALID}
+            onReset={() => handleResetStep('mapping')}
+            hasChanges={hasStepChanges('mapping')}
           />
         );
       default:
@@ -819,6 +887,16 @@ export default function ChartConfigDemo() {
             <button 
               className={`btn-primary ${!allValid ? 'opacity-50 cursor-not-allowed' : ''}`}
               disabled={!allValid}
+              onClick={() => {
+                // When saving, update all snapshots to current state
+                setStepSnapshots({
+                  filters: JSON.parse(JSON.stringify(configState.filters)),
+                  query: JSON.parse(JSON.stringify(configState.query)),
+                  preview: JSON.parse(JSON.stringify(configState.preview)),
+                  mapping: JSON.parse(JSON.stringify(configState.mapping)),
+                });
+                alert('Changes saved! All step snapshots updated.');
+              }}
             >
               Save Changes
             </button>
