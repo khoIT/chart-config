@@ -1,0 +1,95 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.highlight-change {
+  animation: highlight-pulse 2s ease-in-out infinite;
+}
+
+@keyframes highlight-pulse {
+  0%, 100% { background-color: rgba(251, 191, 36, 0.2); }
+  50% { background-color: rgba(251, 191, 36, 0.4); }
+}
+
+.status-badge {
+  @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium;
+}
+
+.step-panel-item {
+  @apply flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all duration-200;
+}
+
+.step-panel-item:hover {
+  @apply bg-slate-100;
+}
+
+.step-panel-item.active {
+  @apply bg-blue-50 border-l-4 border-blue-500;
+}
+
+.filter-tag {
+  @apply inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm;
+}
+
+.filter-tag.removed {
+  @apply bg-red-100 text-red-800 line-through;
+}
+
+.filter-tag.new {
+  @apply bg-green-100 text-green-800;
+}
+
+.query-highlight {
+  @apply bg-amber-200 rounded px-0.5;
+}
+
+.query-error-highlight {
+  @apply bg-red-200 rounded px-0.5 text-red-800;
+}
+
+.tooltip {
+  @apply absolute z-50 px-3 py-2 text-sm bg-slate-800 text-white rounded-lg shadow-lg max-w-xs;
+}
+
+.card {
+  @apply bg-white rounded-xl shadow-sm border border-slate-200 p-5;
+}
+
+.btn-primary {
+  @apply px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium;
+}
+
+.btn-secondary {
+  @apply px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors font-medium;
+}
+
+.btn-warning {
+  @apply px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors font-medium;
+}
+
+.input-field {
+  @apply w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none;
+}
+
+.section-outdated {
+  @apply opacity-60 pointer-events-none;
+}
+
+.warning-banner {
+  @apply flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm;
+}
+
+.error-banner {
+  @apply flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm;
+}
